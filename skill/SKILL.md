@@ -1,22 +1,39 @@
 ---
 name: market-daily
 description: 生成全球金融市场深度日报。覆盖 A 股、港股、美股、日股、加密货币五大市场，含技术分析、多空分歧、多 AI 源交叉验证、事件日历和风险矩阵。手动调用时触发。
-version: "1.0.0"
+version: "1.1.0"
 ---
 
 # 全球金融市场深度日报 (market-daily)
 
 ## Overview
 
-当用户请求生成全球金融市场报告时，按照本 Skill 定义的完整流程执行：并行搜索 → 技术分析 → 多源交叉验证 → 编译报告 → Git 存档。
+当用户请求生成全球金融市场报告时，按照本 Skill 定义的完整流程执行：并行搜索 → 技术分析 → 多源交叉验证 → 编译报告 → 双路径存档。
 
 **核心价值**: 不只是数据罗列，而是提供技术面分析、多空逻辑链对比、AI 源分歧展示，帮助用户理解市场"正在交易什么逻辑"而非仅仅"发生了什么"。
 
 **触发短语**: "市场日报" / "全球市场报告" / "market daily" / "今日行情" / "financial market report" / "市场分析报告"
 
-**报告存档路径**: `workspace-files/reports/YYYY-MM-DD.md`（Git 版本控制）
+---
+
+## 输出路径配置
+
+报告生成后写入**两个位置**（双路径存档）：
+
+| 位置 | 路径 | 文件名格式 | 用途 |
+|------|------|-----------|------|
+| **主路径** | `E:\Projects\dailyreports\` | `YYYY-MM-DD-HHmmss.md` | 用户日常查阅，按时间戳精确命名 |
+| **Git 备份** | `workspace-files/reports/` | `YYYY-MM-DD.md` | 版本控制，每天保留最新一份 |
+
+**时间戳文件名示例**: `2026-06-02-223000.md`（年-月-日-时分秒）
+
+**创建主路径**（首次运行时若目录不存在）:
+```bash
+mkdir -p "E:/Projects/dailyreports"
+```
 
 ---
+
 
 ## 工作流程
 
@@ -208,21 +225,40 @@ version: "1.0.0"
 
 ---
 
-### Phase 5: 存档与版本控制
+### Phase 5: 双路径存档与版本控制
 
 **报告写完后必须执行**:
 
-1. 将报告保存到 `workspace-files/reports/YYYY-MM-DD.md`
-   - 使用绝对路径: `C:\Users\Yang Yunshu\.proma\agent-workspaces\default\workspace-files\reports\YYYY-MM-DD.md`
+#### Step 1: 获取当前时间戳
+```bash
+# 格式: YYYY-MM-DD-HHmmss (e.g., 2026-06-02-223000)
+TIMESTAMP=$(date +"%Y-%m-%d-%H%M%S")
+```
 
-2. Git 提交:
+#### Step 2: 写入主路径（用户查阅目录）
+```bash
+mkdir -p "E:/Projects/dailyreports"
+```
+将报告保存到 `E:\Projects\dailyreports\<TIMESTAMP>.md`
+- 使用绝对路径: `E:/Projects/dailyreports/YYYY-MM-DD-HHmmss.md`
+
+#### Step 3: 写入 Git 备份路径（版本控制）
+将报告同步保存到 `workspace-files/reports/YYYY-MM-DD.md`
+- 使用绝对路径: `C:\Users\Yang Yunshu\.proma\agent-workspaces\default\workspace-files\reports\YYYY-MM-DD.md`
+- 注意：Git 备份路径用日期命名（同一天多次生成会覆盖，保留最新）
+
+#### Step 4: Git 提交（仅备份路径）
 ```bash
 cd "C:/Users/Yang Yunshu/.proma/agent-workspaces/default/workspace-files"
 git add reports/YYYY-MM-DD.md
 git commit -m "report: YYYY-MM-DD 全球金融市场日报"
 ```
 
-3. 告知用户报告已生成，附上文件路径和核心发现摘要。
+#### Step 5: 告知用户
+报告生成后，告知用户：
+- 主路径下的文件路径（带时间戳的完整文件名）
+- Git 备份路径
+- 核心发现摘要（3-5 条）
 
 ---
 
