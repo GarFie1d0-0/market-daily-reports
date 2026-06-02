@@ -1,0 +1,5 @@
+# 敏感文件
+.env
+*.key
+*.pem
+credentials.json
